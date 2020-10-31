@@ -37,55 +37,46 @@ class Grid:
         self.grid = grid
 
         nfilled = 0
-        for row in range(self.SIZE):
-            for col in range(self.SIZE):
-                if self.filled(row, col):
-                    nfilled += 1
+        cells = [ (i, j) for i in range(self.SIZE) for j in range(self.SIZE) ]
+        for (i, j) in cells:
+            if self.filled(i, j):
+                nfilled += 1
         self.nfilled = nfilled
-
-    def solve(self):
-        self.solve_definite()
-        self.solve_by_backtrack()
-
-    def solve_definite(self):
-        for row in range(self.SIZE):
-            for col in range(self.SIZE):
-                if not self.filled(row, col):
-                    T, val = self.fillable(row, col)
-                    if T:
-                        self.set(row, col, val)
-            else:
-                continue
-
-    # fillable returns whether or not the cell positioned by row and col can be filled,
-    # and if so, returns a value, otherwise None.
-    def fillable(self, row, col):
-        nums = self.legal_numbers(row, col)
         
-        # If there is only one possibility in the cell, then fillable.
-        if len(nums) == 1:
-            return True, nums[0]
-        else:
-            return False, None
+    # solve solves sudoku using by backtracking.
+    def solve(self, row, col):
+        if row == self.SIZE - 1 and col >= self.SIZE:
+            return True
 
-    # legal_numbers returns the numbers that can fit in the cell.
-    def legal_numbers(self, row, col):
+        # If col exceeds grid size, we handle row as next line and
+        # col as first.
+        if col >= self.SIZE:
+            row += 1
+            col = 0
+
+        # If the cell already filled, we proceed to the next iteration.
         if self.filled(row, col):
-            return [self.get(row, col)]
+            return self.solve(row, col + 1)
 
-        num_exists = [False] * self.SIZE
+        for val in range(1, 10):
+            if self.fillable(row, col, val):
+                self.set(row, col, val)
+                if self.solve(row, col + 1):
+                    return True
 
+        self.blank(row, col)
+
+    # fillable returns whether or not the cell positioned by row and col can be filled.
+    def fillable(self, row, col, val):
         # row check
         for col_i in range(self.SIZE):
-            if self.filled(row, col_i):
-                n = self.get(row, col_i)
-                num_exists[n-1] = True
+            if self.get(row, col_i) == val:
+                return False
 
         # column check
         for row_i in range(self.SIZE):
-            if self.filled(row_i, col):
-                n = self.get(row_i, col)
-                num_exists[n-1] = True
+            if self.get(row_i, col) == val:
+                return False
 
         # region check
         reg = self.ULcells[row][col]
@@ -95,36 +86,13 @@ class Grid:
             for col_i in range(self.REG_SIZE):
                 r = row_ul + row_i
                 c = col_ul + col_i
-                if self.filled(r, c):
-                    n = self.get(r, c)
-                    num_exists[n-1] = True
+                if self.get(r, c) == val:
+                    return False
 
-        return [ i+1 for i in range(self.SIZE) if not num_exists[i] ]
-
-    def solve_by_backtrack(self):
-        if self.full():
-            return True
-
-        cells = [ (i, j) for i in range(self.SIZE) for j in range(self.SIZE) ]
-        cells = [ (i, j) for (i, j) in cells if not self.filled(i, j) ]
-        nums = [ self.legal_numbers(r, c) for (r, c) in cells ]
-        cells_with_legal_nums = list(zip(cells, nums))
-
-        # all cells sort by length of legal numbers.
-        cells_with_legal_nums.sort(key=lambda p: len(p[1]))
-
-        for ((row, col), nums) in cells_with_legal_nums:
-            for n in nums:
-                self.set(row, col, n)
-                if self.solve_by_backtrack():
-                    return True
-                self.blank(row, col)
+        return True
 
     def filled(self, row, col):
         return self.grid[row][col] != 0
-
-    def full(self):
-        return self.nfilled == self.SIZE * self.SIZE
 
     def set(self, row, col, val):
         self.grid[row][col] = val
@@ -143,17 +111,17 @@ class Grid:
 
 def main():
     grid = [ [3, 0, 6, 5, 0, 8, 4, 0, 0],
-             [5, 2, 0, 0, 0, 4, 0, 6, 8],
-             [0, 8, 7, 0, 0, 9, 0, 3, 1],
-             [0, 0, 3, 0, 1, 5, 0, 8, 0],
+             [5, 2, 0, 0, 0, 0, 0, 0, 0],
+             [0, 8, 7, 0, 0, 0, 0, 3, 1],
+             [0, 0, 3, 0, 1, 0, 0, 8, 0],
              [9, 0, 0, 8, 6, 3, 0, 0, 5],
-             [0, 5, 0, 0, 9, 2, 6, 0, 0],
-             [1, 3, 0, 0, 0, 7, 2, 5, 0],
-             [6, 9, 2, 0, 0, 1, 0, 7, 4],
+             [0, 5, 0, 0, 9, 0, 6, 0, 0],
+             [1, 3, 0, 0, 0, 0, 2, 5, 0],
+             [0, 0, 0, 0, 0, 0, 0, 7, 4],
              [0, 0, 5, 2, 0, 6, 3, 0, 0] ]
 
     grid = Grid(grid)
-    grid.solve()
+    grid.solve(0, 0)
     grid.print()
 
 main()
