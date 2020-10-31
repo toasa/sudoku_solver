@@ -70,6 +70,9 @@ class Grid:
 
     # legal_numbers returns the numbers that can fit in the cell.
     def legal_numbers(self, row, col):
+        if self.filled(row, col):
+            return [self.get(row, col)]
+
         num_exists = [False] * self.SIZE
 
         # row check
@@ -102,23 +105,20 @@ class Grid:
         if self.full():
             return True
 
-        for row in range(self.SIZE):
-            for col in range(self.SIZE):
-                if self.filled(row, col):
-                    continue
+        cells = [ (i, j) for i in range(self.SIZE) for j in range(self.SIZE) ]
+        cells = [ (i, j) for (i, j) in cells if not self.filled(i, j) ]
+        nums = [ self.legal_numbers(r, c) for (r, c) in cells ]
+        cells_with_legal_nums = list(zip(cells, nums))
 
-                nums = self.legal_numbers(row, col)
+        # all cells sort by length of legal numbers.
+        cells_with_legal_nums.sort(key=lambda p: len(p[1]))
 
-                if len(nums) == 0:
-                    return False
-
-                for n in nums:
-                    self.set(row, col, n)
-                    if self.solve_by_backtrack():
-                        return True
-                    self.blank(row, col)
-
-        return True
+        for ((row, col), nums) in cells_with_legal_nums:
+            for n in nums:
+                self.set(row, col, n)
+                if self.solve_by_backtrack():
+                    return True
+                self.blank(row, col)
 
     def filled(self, row, col):
         return self.grid[row][col] != 0
