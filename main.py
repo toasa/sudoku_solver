@@ -1,3 +1,7 @@
+import os
+import sys
+import argparse
+
 class Grid:
     SIZE = 9
     REG_SIZE = 3
@@ -109,6 +113,17 @@ class Grid:
         for row in self.grid:
             print(row)
 
+def get_problem_path():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("problem")
+    problem_name = parser.parse_args().problem
+    path = "problems/" + problem_name
+    if not os.path.exists(path):
+        print("Not found:", path)
+        sys.exit(1)
+
+    return path
+
 def read_problem(path):
     f = open(path)
     lines = f.readlines()
@@ -121,7 +136,7 @@ def read_problem(path):
     return grid
 
 def main():
-    path = "problems/1.txt"
+    path = get_problem_path()
     grid = Grid(read_problem(path))
     if grid.solve(0, 0):
         grid.print()
