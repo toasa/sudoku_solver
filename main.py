@@ -109,19 +109,23 @@ class Grid:
         for row in self.grid:
             print(row)
 
-def main():
-    grid = [ [3, 0, 6, 5, 0, 8, 4, 0, 0],
-             [5, 2, 0, 0, 0, 0, 0, 0, 0],
-             [0, 8, 7, 0, 0, 0, 0, 3, 1],
-             [0, 0, 3, 0, 1, 0, 0, 8, 0],
-             [9, 0, 0, 8, 6, 3, 0, 0, 5],
-             [0, 5, 0, 0, 9, 0, 6, 0, 0],
-             [1, 3, 0, 0, 0, 0, 2, 5, 0],
-             [0, 0, 0, 0, 0, 0, 0, 7, 4],
-             [0, 0, 5, 2, 0, 6, 3, 0, 0] ]
+def read_problem(path):
+    f = open(path)
+    lines = f.readlines()
+    grid = []
+    for l in lines:
+        # truncate new line.
+        l = l[:len(l)-1]
+        l = [ int(c) for c in l ]
+        grid.append(l)
+    return grid
 
-    grid = Grid(grid)
-    grid.solve(0, 0)
-    grid.print()
+def main():
+    path = "problems/1.txt"
+    grid = Grid(read_problem(path))
+    if grid.solve(0, 0):
+        grid.print()
+    else:
+        print("Cannot solvable!")
 
 main()
