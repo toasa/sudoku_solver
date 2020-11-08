@@ -44,5 +44,5 @@ $ python3 main.py 1.txt
 
 # Requirement
 
-- python3
+- Python3
 
